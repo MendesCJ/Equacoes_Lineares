@@ -1,0 +1,397 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#  sistemalinear.py
+#  
+#  Copyright 2016 Carlos José Mendes
+#  
+
+from tkinter import *
+from tkinter import messagebox
+resultadoarq=""
+
+
+class Janela:
+	
+	
+	def __init__(self,toplevel):
+		
+		# Declaração das variáveis
+		self.beta={}
+		self.errx={}
+		self.x={}
+		self.absx={}
+		self.erro=0
+		self.er=1
+		self.ordem=0
+		self.e={}
+		self.matriz={}
+		self.resp={}
+		self.cont=0
+		
+		# Desenho da janela principal
+		self.frameprincipal=Frame(toplevel)
+		self.frameprincipal['padx']=10
+		self.frameprincipal['pady']=5
+		self.frameprincipal.pack()
+		
+		self.desenhaparametro()
+		
+				
+	def desenhaparametro(self):
+		
+		# Desenho da tela de parâmetros
+		self.labelparametro=LabelFrame(self.frameprincipal, width=800, text="Parâmetros")
+		self.labelparametro['padx']=60
+		self.labelparametro['pady']=5
+		self.labelparametro.pack()
+			
+		self.frameparametro=Frame(self.labelparametro, width=800)
+		self.frameparametro['relief']="raised"
+		self.frameparametro['padx']=10
+		self.frameparametro['pady']=5
+		self.frameparametro.pack()
+					
+		self.labelordem=Label(self.frameparametro, text="Ordem do Sistema: ")
+		self.labelordem['padx']=10
+		self.labelordem['pady']=5
+		self.labelordem.pack(side='left')
+			
+		self.textboxordem=Entry(self.frameparametro)
+		self.textboxordem.pack(side='left')
+			
+		self.labelprecisao=Label(self.frameparametro, text="Precisão do Resultado: ")
+		self.labelprecisao['padx']=10
+		self.labelprecisao['pady']=5
+		self.labelprecisao.pack(side='left')
+			
+		self.textboxprecisao=Spinbox(self.frameparametro, values=(0.1,0.01,0.001,0.0001,0.00001,0.000001,0.0000001,0.00000001,0.000000001))
+		self.textboxprecisao.pack(side='left')
+			
+		self.botaoparametro=Button(self.labelparametro, text='Ok', width=10, command=self.pegarordem)
+		self.botaoparametro.pack(side='bottom')
+		self.textboxordem.focus_force()
+		return()
+
+		
+	def desenhasistema(self):	
+		
+		# Desenho da tela de sistema
+		self.labelsistema=LabelFrame(self.frameprincipal, text="Sistema")
+		self.labelsistema['padx']=10
+		self.labelsistema['pady']=5
+		self.labelsistema.pack(fill='both')
+		
+		self.framematriz=Frame(self.labelsistema)
+		self.framematriz['padx']=5
+		self.framematriz['pady']=5
+		
+		self.linhagrade={}
+		for i in range(self.ordem):	
+			self.resp[i]=0	
+			self.linhagrade[i]=Frame(self.labelsistema)
+			self.linhagrade[i].pack()
+				
+			self.tam=72//((self.ordem+1))
+			
+			for j in range(self.ordem+1):				
+				self.e[i,j]=Entry(self.linhagrade[i],width=self.tam)
+				self.e[i,j].pack(expand=True, side="left", fill="both")
+				
+		self.botaocalcular=Button(self.framematriz, text ='Calcular', width=10, command = self.pegamatriz)
+		self.botaoreiniciar=Button(self.framematriz, text ='Reiniciar', width=10, command = self.reiniciar)
+		self.botaocalcular.pack(side='left')
+		self.botaoreiniciar.pack(side='left')
+		self.framematriz.pack()
+		return()
+
+		
+	def desenharesultado(self):	
+		
+		# Desenho da tela de resultado
+		self.labelresultado=LabelFrame(self.frameprincipal, text="Resultado")
+		self.rodape=LabelFrame(self.frameprincipal)
+		
+		self.labelresultado['padx']=10
+		self.labelresultado['pady']=5
+		
+		self.scrollbar=Scrollbar(self.labelresultado)
+		self.exibe=Text(self.labelresultado, yscrollcommand=self.scrollbar.set)
+		self.scrollbar.config(command=self.exibe.yview)
+		
+		self.rodape['padx']=10
+		self.rodape['pady']=5
+		self.framerodape=Frame(self.rodape)
+		self.salvarbotao=Button(self.framerodape, text="Salvar", width=10, command=self.janelasalvar)
+		self.fecharbotao=Button(self.framerodape, text="Fechar", width=10, command=self.fechar)
+
+		self.labelresultado.pack(fill="both")
+		self.scrollbar.pack(side=RIGHT, fill=Y)
+		self.exibe.pack(fill='both')	
+				
+		self.rodape.pack(fill='both')					
+		self.framerodape.pack()				
+		self.salvarbotao.pack(side='left')					
+		self.fecharbotao.pack(side="left")		
+		return()
+
+		
+	# Funções do sistema
+
+		
+	def pegarordem(self):
+	
+		# Esta função permite que o usuário defina os parâmetros iniciais e digite os valores do sistema
+		self.ordem=int(self.textboxordem.get())
+		self.desenhasistema()
+		self.e[0,0].focus_force()
+		self.botaoparametro.pack_forget()	
+		return()
+		
+		
+	def reiniciar(self):
+
+		#Esta função elimina a matriz e a tela de resultados, permitindo que o usuário entre com novos valores		
+		try:
+			self.labelsistema.destroy()
+			self.labelresultado.destroy()
+			self.rodape.destroy()
+			self.botaoparametro.pack()
+			self.textboxordem.delete(0,10)
+			self.textboxordem.focus_force()
+		except:
+			self.labelsistema.destroy()
+			self.botaoparametro.pack()
+			self.textboxordem.delete(0,10)
+			self.textboxordem.focus_force()
+		return()
+		
+		
+	def pegamatriz(self):
+		
+		# Esta função recebe os valores digitados pelo usuário
+		self.inicializavariaveis()
+		for i in range(self.ordem):
+			for j in range(self.ordem):
+				self.matriz[i,j]=float(self.e[i,j].get())
+			self.resp[i, self.ordem]=float(self.e[i, self.ordem].get())
+		self.zeros=self.verificazeros()
+		if self.zeros:
+			self.convergencia=self.sassenfeld()
+			if self.convergencia:
+				try:
+					self.labelresultado.destroy()
+					self.rodape.destroy()
+				except:
+					pass
+				self.erro=float(self.textboxprecisao.get())	
+				self.desenharesultado()
+				self.exibesistema()
+				self.calculamatriz()
+			
+		return()
+
+	
+	def inicializavariaveis(self):
+		
+		# Esta função define elementos neutros para as matrizes
+		self.er=1
+		self.cont=0
+		for i in range(self.ordem):
+			self.beta[i]=1
+			self.x[i]=0
+			self.errx[i]=1
+		return()
+		
+			
+	def verificazeros(self):
+		
+		# Esta função verifica se há zeros na diagonal principal, o que causaria erro, avisa o usuário para alterar a ordem das equações
+		try:
+			for i in range(self.ordem):
+				self.divisao=(1/self.matriz[i,i])
+			return(True)
+		except:
+			self.mensagem='''Há elementos zerados na diagonal principal, isso gerará um erro de divisão por zero. 
+Cada vez que um erro desse ocorre, morre um panda fofinho. 
+Por favor, troque a ordem das equações para que não tenham zeros na diagonal principal. 
+Salve os pandas!'''
+			messagebox.showwarning("Divisão por zero",self.mensagem)
+			self.e[0,0].focus_force()
+			return(False)
+
+
+	def exibesistema(self):
+		
+		# Esta função imprime o sistema na área de resposta
+		self.exibe.insert(INSERT,"\nCálculo de Sistemas Lineares pelo Método de Gauss Seidel\n")
+		self.exibe.insert(INSERT,"\nSistema:\n\n")
+		for linha in range(self.ordem):
+			lin=""
+			for coluna in range(self.ordem):
+				if self.matriz[linha,coluna]>=0:
+					sinal="+"
+				else:
+					sinal=""
+				lin=lin+sinal+str(self.matriz[linha,coluna])+"(x%s) " %str(coluna+1)
+			if self.resp[linha,self.ordem]>=0:
+				sinal="+"
+			else:
+				sinal="-"
+			self.exibe.insert(INSERT, lin+" = "+sinal+"%s"%str(self.resp[linha,self.ordem])+"\n")
+		self.exibe.insert(INSERT,"\n")
+		for i in range(self.ordem):
+			self.exibe.insert(INSERT, "Beta"+str([i+1])+" = "+str(self.beta[i])+"\n")
+		self.exibe.insert(INSERT, "\nMaior valor de Beta = "+str(self.betamax)+" <1 \n")
+		self.exibe.insert(INSERT,"\nSistema converge segundo critério de Sassenfeld\n")
+		return()
+	
+	
+	def sassenfeld(self):
+		
+		# Esta função verifica se o sistema é convergente segundo critério de Sassenfeld
+		for linha in range(self.ordem):
+			soma=0
+			for coluna in range(self.ordem):
+				if linha==coluna:
+					divisor=self.matriz[linha,coluna]
+				else:
+					soma=soma+((self.matriz[linha,coluna])*self.beta[coluna])
+			self.beta[linha]=abs(soma)/divisor
+		self.betamax=self.beta[max(self.beta, key=self.beta.get)]
+		
+		if self.betamax<1:
+			return(True)
+		else:
+			self.mensagem='''Sistema não converge segundo critério de Sassenfeld. 
+Você pode tentar inverter a ordem das linhas e/ou colunas e tentar calcular novamente'''
+			messagebox.showwarning("Critério de Sassenfeld",self.mensagem)
+			self.e[0,0].focus_force()
+			return(False)
+
+	
+	def calculamatriz(self):
+
+		# Esta função calcula o sistema caso haja convergência e imprime os resultados na área de resposta
+		global resultadoarq
+		soma=0
+		while self.er>self.erro:
+			self.exibe.insert(INSERT, "\nIteração %i \n"%self.cont)
+			for linha in range(self.ordem):
+				for coluna in range(self.ordem):
+					if linha==coluna:
+						divisor=self.matriz[linha,coluna]
+					else:
+						soma+=(self.matriz[linha,coluna])*self.x[coluna]
+				self.errx[linha]=self.x[linha]
+				self.x[linha]=(self.resp[linha, self.ordem]-soma)/divisor
+				self.absx[linha]=abs(self.x[linha])
+				self.errx[linha]=abs(self.x[linha]-self.errx[linha])
+				self.er=(self.errx[max(self.errx, key=self.errx.get)])/(self.absx[max(self.absx, key=self.absx.get)])
+				self.exibe.insert(INSERT,"Valor de x"+str(linha+1)+" = %f\n"%self.x[linha])
+				soma=0
+			self.exibe.insert(INSERT, "\nErro relativo = %f\n"%self.er)
+			self.cont+=1
+		self.exibe.insert(INSERT, "\nRaizes das equações encontradas: \n")
+		for linha in range(self.ordem):
+			self.exibe.insert(INSERT, "x%i = %10.5f\n" %(linha+1, self.x[linha]))
+		resultadoarq=self.exibe.get(1.0,END)
+		return()
+		
+		
+	def janelasalvar(self):
+		
+		# Esta função cria a uma instancia de Salvar
+		self.salvararq=Toplevel()
+		Salvar(self.salvararq)
+		self.salvararq.mainloop()
+		return()
+	
+
+	def fechar(self):
+		
+		# Esta função aniquila a janela principal por todo o sempre, até que o programa seja novamente carregado
+		raiz.destroy()
+		return()
+	
+	
+class Salvar:
+	
+	
+	def __init__(self, toplevel):
+		self.salvararq=toplevel
+		
+		# Desenho da janela salvar
+		self.salvararq.title("Salvar arquivo")
+		self.salvararq.geometry("400x180")
+		
+		self.frameprincipal=Frame(toplevel)
+		self.frameprincipal['padx']=10
+		self.frameprincipal['pady']=10
+		self.frameprincipal.pack(fill="both")
+		
+		self.labelframe=LabelFrame(self.frameprincipal)
+		self.labelframe['padx']=10
+		self.labelframe['pady']=10
+		self.labelframe.pack(fill='both')
+		
+		self.frame2=Frame(self.labelframe)
+		self.frame2['padx']=10
+		self.frame2['pady']=10
+		self.frame2.pack(side='top', fill='both')
+		
+		self.frame3=Frame(self.labelframe)
+		self.frame3['padx']=10
+		self.frame3['pady']=10
+		self.frame3.pack(side='top', fill='both')
+		
+		self.label1=Label(self.frame2, text='Nome do Arquivo: ')
+		self.label1.pack(side='left')
+		
+		self.textbox1=Entry(self.frame2, width=30)
+		self.textbox1.pack(side='left')
+		
+		self.botao1=Button(self.frame3, text="Salvar", width=10, command=self.salvar)
+		self.botao1.pack()
+		
+		self.frame4=Frame(self.labelframe)
+		self.frame4['padx']=10
+		self.frame4['pady']=10
+		self.frame4.pack(side='top', fill='both')
+		
+		self.mensagem=Label(self.frame4, text="Digite o nome do arquivo sem extensão", relief='sunken')
+		self.mensagem.pack(fill='both')
+		
+	
+	def fechar(self):
+		
+		# Esta função fecha a janela salvar
+		self.salvararq.destroy()
+		return()
+		
+		
+	def salvar(self):
+		
+		# Esta função salva o arquivo
+		global resultadoarq
+		self.nomearquivo=str(self.textbox1.get())+".txt"
+		try:
+			self.arq=open(self.nomearquivo, "r")
+			self.mensagem['text']="Arquivo já existe, escolha outro nome!"
+			self.arq.close()
+		except:
+			self.arq=open(self.nomearquivo, "w")
+			self.arq.writelines(resultadoarq+"\n")
+			self.arq.close()
+			self.mensagem['text']="Arquivo %s salvo com sucesso!" %self.nomearquivo
+			self.botao1['text']='Ok'
+			self.botao1['command']=self.fechar
+		return()
+	
+raiz=Tk()
+Janela(raiz)
+raiz.title("Cálculo de Sistemas Lineares - Gauss Seidel")
+raiz.geometry("800x800")
+raiz.mainloop()
+
+
